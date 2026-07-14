@@ -1,0 +1,221 @@
+# O365 Mailbox test plan standardization rules (POC v0.2)
+# Format: indented bullet lists (NOT tables)
+# Reference automation: o365_ews_to_graphapi_migration_suite_7.5.yaml
+
+product: o365-mailbox
+version: poc-0.2
+format: indented_outline
+
+valid_roots:
+  - MsgFolderRoot
+  - ArchiveMsgFolderRoot
+  - RecoverableItemsRoot
+  - ArchiveRecoverableItemsRoot
+
+default_folders:
+  MsgFolderRoot: [Inbox, Calendar, Contacts, Tasks, Notes, "Deleted Items"]
+  ArchiveMsgFolderRoot: [Inbox, Calendar, Contacts, Tasks, Notes, "Deleted Items"]
+
+# Headings that define item-type context in Data Staging
+staging_item_headings:
+  email:
+    keywords: [populate mail, email item, mail item, inbox, email items in custom folder]
+  calendar:
+    keywords: [calendar item, calendar items, one-time event, recurring event, all-day event]
+  contact:
+    keywords: [contact item, contact items, contacts folder]
+  task:
+    keywords: [task item, task items, tasks folder]
+  note:
+    keywords: [note item, note items, notes folder]
+  recoverable:
+    keywords: [recoverable item, deleted item, purges, deletions, discoveryholds, substrate holds]
+  archive:
+    keywords: [archivemsgfolderroot, in place archive, archive custom, archive migration]
+
+# Root context headings in Data Staging
+staging_root_headings:
+  MsgFolderRoot:
+    keywords: [populate msgfolderroot, msgfolderroot, primary mailbox]
+  ArchiveMsgFolderRoot:
+    keywords: [archivemsgfolderroot, in place archive, archive mailbox]
+  RecoverableItemsRoot:
+    keywords: [recoverable items root, recoverable items, ri folders]
+  ArchiveRecoverableItemsRoot:
+    keywords: [archive recoverable]
+
+# Custom folder naming (must match automation FolderPath values)
+custom_folder_patterns:
+  MsgFolderRoot:
+    required_examples:
+      - Migration_Add_Update_Delete_Email
+      - Migration_Folder_DataStaging_SpecialChars
+      - Migration_Folder_Attachments
+      - Migration_DirHierarchy1
+      - Migration_EmptyFolder_NoItems1
+      - Migration_FolderOperations_Add
+      - Migration_FolderOperations_Update
+      - Migration_FolderOperations_Delete
+      - Migration_MoveEmail_Folder1
+      - Migration_MoveEmail_Folder2
+      - Migration_ParentFolder1
+      - Migration_ParentFolder2
+      - NonEmail_Items_In_CustomFolders
+      - Migration_ScaleFolder
+    patterns:
+      - "^Migration_[A-Za-z0-9_\\\\]+"
+      - "^Incr_Migration_[A-Za-z0-9_]+"
+      - "^NonEmail_Items_In_CustomFolders$"
+  ArchiveMsgFolderRoot:
+    required_examples:
+      - Archive_Migration_Add_Update_Delete_Email
+      - Archive_Folder_DataStaging_SpecialChars
+      - Archive_Migration_Folder_Attachments
+      - Archive_Migration_DirHierarchy1
+      - Archive_Migration_FolderOperations_Add
+      - Archive_Migration_FolderOperations_Update
+      - Archive_Migration_FolderOperations_Delete
+      - Archive_Migration_MoveEmail_Folder1
+      - Archive_Migration_MoveEmail_Folder2
+      - Archive_Migration_ParentFolder1
+      - Archive_Migration_ParentFolder2
+      - Archive_Migration_EmptyFolder_NoItems1
+    patterns:
+      - "^Archive_[A-Za-z0-9_\\\\]+"
+      - "^Incr_Archive_[A-Za-z0-9_]+"
+
+data_read:
+  section_keywords: [data read, readdb, baseline read, read db]
+  must_mirror_staging: true
+
+backup_recovery:
+  backup_keywords: [backup, protection run, incremental backup, full backup]
+  recovery_keywords: [recovery, restore, granular recovery, full restore, glr]
+  required_root_mentions:
+    - MsgFolderRoot
+
+rules:
+  # Parse / structure
+  - id: PARSE-001
+    severity: critical
+    check: parse_indented_outline
+    message: "Could not parse test plan outline from indented lists (no table expected)."
+
+  - id: PARSE-002
+    severity: critical
+    check: data_staging_section_exists
+    message: "No Data Staging section found."
+
+  - id: PARSE-003
+    severity: critical
+    check: data_read_section_exists
+    message: "No Data Read section found (e.g. Data Read - ReadDB1)."
+
+  # Data Staging — item under correct heading
+  - id: STG-HDR-001
+    severity: critical
+    check: email_items_under_email_heading
+    message: "Email/mail staging bullets appear under wrong heading (must be under Email/Mail/Inbox section, not Calendar/Note/etc.)."
+
+  - id: STG-HDR-002
+    severity: critical
+    check: calendar_items_under_calendar_heading
+    message: "Calendar staging bullets appear under wrong heading."
+
+  - id: STG-HDR-003
+    severity: high
+    check: contact_items_under_contact_heading
+    message: "Contact staging bullets appear under wrong heading."
+
+  - id: STG-HDR-004
+    severity: high
+    check: task_items_under_task_heading
+    message: "Task staging bullets appear under wrong heading."
+
+  - id: STG-HDR-005
+    severity: high
+    check: note_items_under_note_heading
+    message: "Note staging bullets appear under wrong heading."
+
+  - id: STG-ROOT-001
+    severity: critical
+    check: staging_under_correct_root_heading
+    message: "Staging item listed under wrong root (MsgFolderRoot vs ArchiveMsgFolderRoot vs RecoverableItemsRoot)."
+
+  # Custom folder names
+  - id: STG-FOLDER-001
+    severity: critical
+    check: custom_folder_name_documented
+    message: "Custom folder staging uses vague path (e.g. DirCustom1) without automation folder name (Migration_* or Archive_*)."
+
+  - id: STG-FOLDER-002
+    severity: high
+    check: custom_folder_matches_automation_pattern
+    message: "Custom folder name does not match automation naming (Migration_*, Archive_*, Incr_Migration_*, NonEmail_Items_In_CustomFolders)."
+
+  - id: STG-FOLDER-003
+    severity: high
+    check: archive_custom_folder_has_archive_prefix
+    message: "Archive custom folder missing Archive_ prefix."
+
+  - id: STG-FOLDER-004
+    severity: medium
+    check: hierarchy_path_uses_migration_folder_names
+    message: "Directory hierarchy path should use Migration_DirHierarchy1/Migration_DirHierarchy2/... not generic DirHierarchy names only."
+
+  # Data Read consistency with staging
+  - id: READ-001
+    severity: critical
+    check: staged_custom_folder_in_data_read
+    message: "Custom folder staged in Data Staging but missing from Data Read (or name mismatch)."
+
+  - id: READ-002
+    severity: critical
+    check: data_read_folder_name_exact_match
+    message: "Data Read folder name does not exactly match staging/automation name."
+
+  - id: READ-003
+    severity: high
+    check: default_folder_read_if_staged
+    message: "Default folder staged (Inbox/Calendar/Contacts/Tasks/Notes) but not listed in Data Read baseline."
+
+  - id: READ-004
+    severity: high
+    check: archive_read_matches_archive_staging
+    message: "Archive staging folders not reflected in Data Read In Place Archives section."
+
+  - id: READ-005
+    severity: high
+    check: recoverable_read_if_staged
+    message: "Recoverable items staged but RI folders missing from Data Read."
+
+  - id: READ-006
+    severity: medium
+    check: granular_vs_full_read_coverage
+    message: "Data Read missing granular or full restore baseline called out in staging scope."
+
+  # Backup / recovery roots
+  - id: BKR-001
+    severity: critical
+    check: backup_roots_explicitly_listed
+    message: "Backup section does not explicitly list included roots (MsgFolderRoot, ArchiveMsgFolderRoot, etc.)."
+
+  - id: BKR-002
+    severity: critical
+    check: recovery_roots_explicitly_listed
+    message: "Recovery/restore section does not explicitly list included roots."
+
+  - id: BKR-003
+    severity: high
+    check: recovery_roots_consistent_with_backup
+    message: "Recovery lists a root not included in backup."
+
+  - id: BKR-004
+    severity: high
+    check: archive_root_in_backup_if_archive_staged
+    message: "ArchiveMsgFolderRoot staging present but ArchiveMsgFolderRoot not in backup roots."
+
+  - id: BKR-005
+    severity: medium
+    check: recoverable_root_in_backup_if_ri_staged
+    message: "RecoverableItems staging present but RecoverableItemsRoot not in backup roots."

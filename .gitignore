@@ -1,0 +1,22 @@
+# Secrets — never commit
+.env
+.env.*
+*.pat
+.confluence_pat
+**/credentials*
+
+# Runtime / local
+/tmp/
+*.pyc
+__pycache__/
+.Python
+.venv/
+venv/
+.DS_Store
+.idea/
+.vscode/
+
+# Generated findings
+**/testplan-findings.json
+/tmp/testplan-findings.json
+*.log

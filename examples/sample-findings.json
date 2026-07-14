@@ -1,0 +1,29 @@
+[
+  {
+    "rule_id": "STG-FOLDER-001",
+    "severity": "critical",
+    "anchor": "DirCustom1",
+    "location": "Data Staging > MsgFolderRoot > Email",
+    "message": "Custom folder uses vague name DirCustom1 without automation folder name.",
+    "fix": "Rename to Migration_Add_Update_Delete_Email (or matching Migration_* name).",
+    "match_index": 0
+  },
+  {
+    "rule_id": "BKR-001",
+    "severity": "critical",
+    "anchor": "Backup scope",
+    "location": "Backup / Recovery",
+    "message": "Backup section does not explicitly list included roots.",
+    "fix": "List MsgFolderRoot (and ArchiveMsgFolderRoot / RecoverableItemsRoot if staged).",
+    "match_index": 0
+  },
+  {
+    "rule_id": "READ-001",
+    "severity": "high",
+    "anchor": "Data Read - ReadDB1",
+    "location": "Data Read",
+    "message": "Custom folder staged in Data Staging but missing from Data Read.",
+    "fix": "Add the exact Migration_* folder name to the Data Read baseline.",
+    "match_index": 0
+  }
+]
