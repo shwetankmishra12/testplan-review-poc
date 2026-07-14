@@ -30,15 +30,38 @@ repo directory (not `$HOME`).
 
 ---
 
-## 3. Confluence PAT
+## 3. Confluence PAT (use a file — not shell export)
+
+Cursor agent tool shells often **do not inherit** `export` from the terminal
+where `agent worker start` is running. Putting the PAT only in that shell is a
+common cause of:
+
+> CONFLUENCE_PERSONAL_ACCESS_TOKEN not set on worker
+
+**Preferred (works even when env is stripped):**
+
+```bash
+echo '<your-pat>' > ~/.confluence_pat
+chmod 600 ~/.confluence_pat
+```
+
+Optional: also export in the worker shell (harmless if file exists):
 
 ```bash
 export CONFLUENCE_URL=https://confluence.cohesity.com
 export CONFLUENCE_PERSONAL_ACCESS_TOKEN=<your-pat>
-# or: echo '<pat>' > ~/.confluence_pat && chmod 600 ~/.confluence_pat
 ```
 
-Do not commit the PAT.
+Verify as the worker user:
+
+```bash
+# should print the token length, not empty
+wc -c ~/.confluence_pat
+./scripts/fetch_confluence_page.sh --page-id 1313507592 | head -5
+```
+
+Do not commit the PAT. Restart is **not** required after creating `~/.confluence_pat`
+(scripts read the file each run).
 
 ---
 
@@ -62,7 +85,7 @@ Confirm under **cursor.com/dashboard → Cloud Agents → My Machines**.
 |-------|-------|
 | Repository | This GitHub repo (`testplan-review-poc`) |
 | Runtime | Self-hosted / My Machines |
-| Agent Instructions | Paste `automation/agent-instructions.md` |
+| Agent Instructions | Paste only `automation/BOOTSTRAP.md` (agent reads full `agent-instructions.md` from repo) |
 | Trigger | Slack channel (top-level messages with Confluence URLs) |
 | Slack | Respond in thread; short summary only |
 

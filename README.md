@@ -18,7 +18,7 @@ examples/          Sample findings JSON / Slack summary
 ## Prerequisites
 
 - Self-hosted Cursor worker on a Mac with VPN to `confluence.cohesity.com`
-- `CONFLUENCE_URL` + `CONFLUENCE_PERSONAL_ACCESS_TOKEN` (or `~/.confluence_pat`)
+- Confluence PAT in **`~/.confluence_pat`** (agent shells often do not inherit `export`)
 - Cursor Automation linked to **this** GitHub repo
 - Standards checklist:
   https://confluence.cohesity.com/pages/viewpage.action?pageId=1313507592
@@ -29,13 +29,17 @@ Confluence MCP **cannot** create inline comments. Use `scripts/post_inline_comme
 
 ```bash
 cd /Users/shwetank.mishra@cohesity.com/workspace/testplan-review-poc
-export CONFLUENCE_URL=https://confluence.cohesity.com
-export CONFLUENCE_PERSONAL_ACCESS_TOKEN=<pat>   # or use ~/.confluence_pat
+
+# Required — file, not just shell export (automation shells strip env)
+echo '<pat>' > ~/.confluence_pat && chmod 600 ~/.confluence_pat
+
 agent login
 agent worker start   # leave terminal open; start from THIS repo root
 ```
 
-Paste `automation/agent-instructions.md` into the Cursor Automation **Agent Instructions**.
+In Cursor Automation → **Agent Instructions**, paste only
+`automation/BOOTSTRAP.md` (short). The agent then reads
+`automation/agent-instructions.md` from the repo on each run.
 
 ## Manual smoke test
 
