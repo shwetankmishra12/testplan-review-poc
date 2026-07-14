@@ -153,13 +153,11 @@ def format_comment(finding: dict) -> str:
     sev = escape(str(finding.get("severity", "medium")).upper())
     msg = escape(str(finding.get("message", "")).strip())
     fix = escape(str(finding.get("fix", "")).strip())
-    loc = escape(str(finding.get("location", "")).strip())
+    # Omit location — inline highlight already shows where the finding is.
     parts = [
         f"<p><strong>[{rule}]</strong> · {sev}</p>",
         f"<p>{msg}</p>" if msg else "",
     ]
-    if loc:
-        parts.append(f"<p><em>Location:</em> {loc}</p>")
     if fix:
         parts.append(f"<p><em>Suggested fix:</em> {fix}</p>")
     parts.append(

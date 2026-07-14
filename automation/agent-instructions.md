@@ -83,12 +83,14 @@ Apply standards. For each finding produce:
   "rule_id": "STG-003",
   "severity": "critical|high|medium|low",
   "anchor": "exact text from the page to highlight (prefer UNIQUE phrase from the plan)",
-  "location": "outline path e.g. Data Staging > MsgFolderRoot > Email",
   "message": "what is wrong",
   "fix": "concrete fix",
   "match_index": 0
 }
 ```
+
+Do not put a "Location:" line in comment text — the inline highlight is enough.
+Optional `location` in JSON is for your own grading only; the post script omits it.
 
 **Anchor rules (required for inline comments to work):**
 - `anchor` MUST be a contiguous substring of the page storage HTML / visible text.
